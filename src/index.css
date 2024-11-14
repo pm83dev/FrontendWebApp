@@ -32,6 +32,7 @@ h1{
     background-color: inherit; /* Mantiene il colore di sfondo del body */
     min-height: 100vh; /* Assicura che il contenuto riempia la pagina */
     box-sizing: border-box;
+    min-width: 95%;
 }
 
 /* Stile per la sidebar */
@@ -45,6 +46,11 @@ h1{
     color: #fff;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.brand-text{
+    font-size: 24px;
+    font-family: Korataki, Arial, Helvetica, sans-serif;
 }
 
 .sidebar {
@@ -133,10 +139,9 @@ h1{
 
 /* Stili per le card dei dati */
 .data-card {
-    background-color: #ffffff;
-    border: 1px solid #dddddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #333;
+    color: #fff;
+    margin-bottom: 10px;
 }
 
 .data-card-header {
@@ -144,16 +149,12 @@ h1{
     color: #ffffff;
     font-weight: bold;
     text-align: center;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
 }
 
 /* Stili per la card del grafico */
 .chart-card {
-    background-color: #ffffff;
-    border: 1px solid #dddddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #555;
+    border-radius: 10px;    
 }
 
 .chart-card-header {
@@ -161,8 +162,6 @@ h1{
     color: #ffffff;
     font-weight: bold;
     text-align: center;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
 }
 
 /* Aggiunge margine tra le colonne nelle card group */
@@ -170,7 +169,11 @@ h1{
     margin-bottom: 20px;
 }
 
-
+/* Pulsanti tabella DPP */
+.btn-TableDpp {
+    display:flow ;
+    margin: 5px !important;
+}
 
 /* Stile per pulsanti generali */
 .btn {
@@ -248,7 +251,7 @@ h1{
 .table-dark {
     background-color: #343a40;
     color: #fff;
-    margin: 10px;
+    margin: 5px;
     text-align:center;
     
 }

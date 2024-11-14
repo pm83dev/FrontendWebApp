@@ -81,7 +81,7 @@ function App() {
                             </PrivateRoute>
                         }
                     />
-
+                   
                     {/* Puoi aggiungere altre rotte qui */}
                 </Routes>
             </MainLayout>

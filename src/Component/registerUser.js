@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Modal, Button, Table } from 'react-bootstrap';
+import { Button, Table, Container } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import ModalUser from './modalUserForm';
 
@@ -11,7 +11,7 @@ function RegisterUser() {
 
     // Fetch the user list on component mount
     useEffect(() => {
-        axios.get('https://localhost:7085/api/Account/UserList')
+        axios.get('https://localhost:7181/api/Account/UserList')
             .then(response => {
                 setUserList(response.data);
                 console.log("Dati ricevuti:", response.data);
@@ -40,7 +40,7 @@ function RegisterUser() {
         try {
 
             if (confirmDelete) {
-                await axios.delete(`https://localhost:7085/api/Account/${id}`);
+                await axios.delete(`https://localhost:7181/api/Account/${id}`);
                 setUserList(userList.filter(user => user.id !== id));
             }
             
@@ -67,7 +67,8 @@ function RegisterUser() {
     };
 
     return (
-        <div className="container py-5">
+        <div className="main-content">
+            <Container fluid className="dppList-container">
             <h1 className="mb-4">User List</h1>
             <Button variant="success" size="lg" className="mb-4" onClick={handleShow}>
                 <FaPlus /> Insert New
@@ -84,7 +85,6 @@ function RegisterUser() {
             <Table className="table table-dark table-striped">
                 <thead>
                     <tr>
-                        <th>Id</th>
                         <th>User/E-mail</th>
                         <th>Name</th>
                         <th>Surname</th>
@@ -97,7 +97,6 @@ function RegisterUser() {
                     {userList.length > 0 ? (
                         userList.map((user) => (
                             <tr key={user.id}>
-                                <td>{user.id}</td>
                                 <td>{user.userName}</td>
                                 <td>{user.name}</td>
                                 <td>{user.surname}</td>
@@ -120,6 +119,7 @@ function RegisterUser() {
                     )}
                 </tbody>
             </Table>
+            </Container>
         </div>
     );
 }

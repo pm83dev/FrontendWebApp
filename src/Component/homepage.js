@@ -1,14 +1,14 @@
 ﻿// HomePage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Modal, Button, Form, Table } from 'react-bootstrap';
+import { Modal, Button, Form, Table, Container } from 'react-bootstrap';
 
 function HomePage() {
     const [dataTest, setDataTest] = useState([]);
     const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        axios.get('https://localhost:7085/WeatherForecast/GetWeatherForecast')
+        axios.get('https://localhost:7181/WeatherForecast')
             .then(response => {
                 setDataTest(response.data);
                 console.log("testdatiApi:", response.data);
@@ -25,9 +25,10 @@ function HomePage() {
     };
 
     return (
-        <div className="container">
-            <h2>Homepage</h2>
-            <p>Welcome to the protected homepage page.</p>
+        <div className="main-content">
+            <Container fluid className="homepage-container">
+            <h2>Plasmac - <em>Recycling Passion</em></h2>
+            <p></p>
 
             <Button variant="primary" onClick={handleButtonClick}>
                 Click me!
@@ -75,6 +76,7 @@ function HomePage() {
                     )}
                 </tbody>
             </Table>
+            </Container>
         </div>
     );
 };

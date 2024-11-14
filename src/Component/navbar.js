@@ -1,19 +1,33 @@
-﻿import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import logo from '../images/LogoPlasmacIcon50x.png';
-import { FaHome, FaUsers, FaUserTie, FaIndustry, FaChartBar, FaLock } from 'react-icons/fa';
+import { FaHome, FaUsers, FaUserTie, FaIndustry, FaRobot, FaLock, FaSignOutAlt } from 'react-icons/fa';
+import { Modal, Button, Form, Table,Row } from 'react-bootstrap';
 
 function Sidebar() {
     const navigate = useNavigate();
 
+    
+    // User logged 
+    // Recupera l'utente loggato
+    const user = JSON.parse(localStorage.getItem('user'));
+    // Recupera il nome dell'utente
+    const userName = user.name;
+    console.log(userName);
+    
+    
+
     // Gestione logout
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
+        const confirmLogout = window.confirm("Are you sure to log out?");
+        if (confirmLogout) {
+            localStorage.removeItem("token");
+            navigate("/login");
+        }
     };
 
     return (
-        <div className="container-sidebar">
+        <div className="container-sidebar container-fluid">
             <div className="sidebar bg-dark text-white">
                 <div className="sidebar-top text-center">
                     <h2 className="sidebar-title">PLASMAC</h2>
@@ -31,7 +45,7 @@ function Sidebar() {
                     </li>
                     <li className="nav-item">
                         <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                            <FaUserTie /> Users
+                            <FaUsers /> Users Manager
                         </NavLink>
                     </li>
                     <li className="nav-item">
@@ -40,8 +54,8 @@ function Sidebar() {
                         </NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                            <FaChartBar /> Dashboard
+                        <NavLink to="test" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                            <FaRobot /> Spare Page
                         </NavLink>
                     </li>
                     <li className="nav-item">
@@ -51,12 +65,20 @@ function Sidebar() {
                     </li>
                 </ul>
                 <hr />
-                <div className="sidebar-user">
-                    {/* User Info Here */}
-                </div>
+                <Row className="justify-content-center">
+                    <Button variant="danger" onClick={handleLogout}>
+                    Log-Out <FaSignOutAlt/> 
+                    </Button>
+                </Row>
+                <hr></hr>
+                <Row >
+                    <p className="text-center">User logged:</p>
+                    <p className="text-center text-wrap">{userName}</p>
+                </Row>
             </div>
         </div>
     );
 }
+
 
 export default Sidebar;
