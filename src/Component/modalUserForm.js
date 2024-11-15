@@ -34,7 +34,7 @@ const ModalUser = ({ showModalExt, onHide, currentUser, handleAddOrUpdateUser })
 
         if (currentUser) {
             // Aggiornamento utente esistente
-            axios.put(`https://localhost:7181/api/Account/${newUser.id}`, newUser)
+            axios.put(`https://9eca-31-171-141-197.ngrok-free.app/api/Account/${newUser.id}`, newUser)
                 .then(response => {
                     handleAddOrUpdateUser(response.data);
                 })
@@ -43,7 +43,7 @@ const ModalUser = ({ showModalExt, onHide, currentUser, handleAddOrUpdateUser })
                 });
         } else {
             // Creazione nuovo utente
-            axios.post('https://localhost:7181/api/Account/Register', newUser)
+            axios.post('https://9eca-31-171-141-197.ngrok-free.app/api/Account/Register', newUser)
                 .then(response => {
                     handleAddOrUpdateUser(response.data);
                 })

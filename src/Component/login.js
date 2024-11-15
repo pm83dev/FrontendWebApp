@@ -15,7 +15,7 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('https://localhost:7181/api/Account/login', { Email, Password });
+      const response = await axios.post('https://9eca-31-171-141-197.ngrok-free.app/api/Account/login', { Email, Password });
       const token = response.data.token;
       const userName = response.data.username;
       localStorage.setItem('token', token);

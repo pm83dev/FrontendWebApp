@@ -13,10 +13,11 @@ function Dpplist() {
     const [filter, setFilter] = useState('');
     const navigate = useNavigate();
 
+    //locale 
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
-            const response = await axios.get('https://localhost:7181/api/DppMachine');
+            const response = await axios.get('https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine');
             setDppMachine(response.data);
         } catch (error) {
             console.error(error);
@@ -70,7 +71,7 @@ function Dpplist() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure to delete this item?")) {
             try {
-                await axios.delete(`https://localhost:7085/api/DppMachine/${id}`);
+                await axios.delete(`https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine/${id}`);
                 setDppMachine((prev) => prev.filter(machine => machine.id !== id));
             } catch (error) {
                 console.error(error);

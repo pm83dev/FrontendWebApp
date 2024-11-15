@@ -18,7 +18,7 @@ const DashboardPage = () => {
     // Funzione per aggiornare i dati delle temperature
     const fetchTemperatureData = () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`https://localhost:7181/api/DeviceData/temperature/${newMachineData.jobNr}`)
+            axios.get(`https://9eca-31-171-141-197.ngrok-free.app/api/DeviceData/temperature/${newMachineData.jobNr}`)
                 .then(response => {
                     setTempData(response.data); // Aggiorna i dati delle temperature
                     console.log("Dati temperature ricevuti dall'API:", response.data);
@@ -32,7 +32,7 @@ const DashboardPage = () => {
     // Funzione per aggiornare i dati dei motori
     const fetchMotorData = () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`https://localhost:7181/api/DeviceData/motor/${newMachineData.jobNr}`)
+            axios.get(`https://9eca-31-171-141-197.ngrok-free.app/api/DeviceData/motor/${newMachineData.jobNr}`)
                 .then(response => {
                     setMotorData(response.data); // Aggiorna i dati dei motori
                     console.log("Dati motori ricevuti dall'API:", response.data);

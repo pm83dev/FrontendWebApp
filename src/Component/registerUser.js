@@ -40,7 +40,7 @@ function RegisterUser() {
         try {
 
             if (confirmDelete) {
-                await axios.delete(`https://localhost:7181/api/Account/${id}`);
+                await axios.delete(`https://9eca-31-171-141-197.ngrok-free.app/api/Account/${id}`);
                 setUserList(userList.filter(user => user.id !== id));
             }
             

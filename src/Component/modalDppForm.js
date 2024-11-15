@@ -46,7 +46,7 @@ const ModalDpp = ({ showModalExt, onHide, updatedMachine, handleAddOrUpdateMachi
         event.preventDefault();
 
         if (updatedMachine) {
-            axios.put(`https://localhost:7181/api/DppMachine/${newMachine.id}`, newMachine)
+            axios.put(`https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine/${newMachine.id}`, newMachine)
                 .then(response => {
                     handleAddOrUpdateMachine(response.data);
                 })
@@ -54,7 +54,7 @@ const ModalDpp = ({ showModalExt, onHide, updatedMachine, handleAddOrUpdateMachi
                     console.error(error);
                 });
         } else {
-            axios.post('https://localhost:7181/api/DppMachine', newMachine)
+            axios.post('https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine', newMachine)
                 .then(response => {
                     handleAddOrUpdateMachine(response.data);
                 })
