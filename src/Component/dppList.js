@@ -14,7 +14,7 @@ function Dpplist() {
     const [filter, setFilter] = useState('');
     const navigate = useNavigate();
 
-    //locale 
+    
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
