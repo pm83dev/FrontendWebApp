@@ -4,6 +4,7 @@ import ModalDpp from './modalDppForm';
 import { useNavigate } from 'react-router-dom';
 import { Button, Table, Container, Form, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaChartBar } from 'react-icons/fa';
+import config from './config';
 
 function Dpplist() {
     const [dppMachine, setDppMachine] = useState([]);
@@ -17,7 +18,7 @@ function Dpplist() {
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
-            const response = await axios.get('https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine/MachineList');
+            const response = await axios.get(`${config.NGROK_URL}/api/DppMachine/MachineList`);
             setDppMachine(response.data);
         } catch (error) {
             console.error(error);
@@ -71,7 +72,7 @@ function Dpplist() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure to delete this item?")) {
             try {
-                await axios.delete(`https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine/${id}`);
+                await axios.delete(`${config.NGROK_URL}/api/DppMachine/${id}`);
                 setDppMachine((prev) => prev.filter(machine => machine.id !== id));
             } catch (error) {
                 console.error(error);

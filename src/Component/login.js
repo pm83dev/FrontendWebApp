@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../images/LogoPlasmacIcon50x.png';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import { FaRecycle, FaHeart} from 'react-icons/fa';
+import config from './config';  
 
 const LoginPage = () => {
   const [Email, setEmail] = useState('');
@@ -15,7 +16,7 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('https://9eca-31-171-141-197.ngrok-free.app/api/Account/login', { Email, Password });
+      const response = await axios.post(`${config.NGROK_URL}/api/Account/login`, { Email, Password });
       const token = response.data.token;
       const userName = response.data.username;
       localStorage.setItem('token', token);

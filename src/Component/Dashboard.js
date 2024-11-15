@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, CardHeader, CardBody, CardTitle, CardText } from 'react-bootstrap';
 import { Line } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend } from 'chart.js';
+import config from './config';
 
 // Registriamo i componenti necessari di Chart.js
 Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend);
@@ -18,7 +19,7 @@ const DashboardPage = () => {
     // Funzione per aggiornare i dati delle temperature
     const fetchTemperatureData = () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`https://9eca-31-171-141-197.ngrok-free.app/api/DeviceData/temperature/${newMachineData.jobNr}`)
+            axios.get(`${config.NGROK_URL}/api/DeviceData/temperature/${newMachineData.jobNr}`)
                 .then(response => {
                     setTempData(response.data); // Aggiorna i dati delle temperature
                     console.log("Dati temperature ricevuti dall'API:", response.data);
@@ -32,7 +33,7 @@ const DashboardPage = () => {
     // Funzione per aggiornare i dati dei motori
     const fetchMotorData = () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`https://9eca-31-171-141-197.ngrok-free.app/api/DeviceData/motor/${newMachineData.jobNr}`)
+            axios.get(`${config.NGROK_URL}/api/DeviceData/motor/${newMachineData.jobNr}`)
                 .then(response => {
                     setMotorData(response.data); // Aggiorna i dati dei motori
                     console.log("Dati motori ricevuti dall'API:", response.data);

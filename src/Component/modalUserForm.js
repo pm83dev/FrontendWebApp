@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
+import config from './config';
 
 const ModalUser = ({ showModalExt, onHide, currentUser, handleAddOrUpdateUser }) => {
     const [newUser, setNewUser] = useState({
@@ -34,7 +35,7 @@ const ModalUser = ({ showModalExt, onHide, currentUser, handleAddOrUpdateUser })
 
         if (currentUser) {
             // Aggiornamento utente esistente
-            axios.put(`https://9eca-31-171-141-197.ngrok-free.app/api/Account/${newUser.id}`, newUser)
+            axios.put(`${config.NGROK_URL}/api/Account/${newUser.id}`, newUser)
                 .then(response => {
                     handleAddOrUpdateUser(response.data);
                 })
@@ -43,7 +44,7 @@ const ModalUser = ({ showModalExt, onHide, currentUser, handleAddOrUpdateUser })
                 });
         } else {
             // Creazione nuovo utente
-            axios.post('https://9eca-31-171-141-197.ngrok-free.app/api/Account/Register', newUser)
+            axios.post(`${config.NGROK_URL}/api/Account/Register`, newUser)
                 .then(response => {
                     handleAddOrUpdateUser(response.data);
                 })

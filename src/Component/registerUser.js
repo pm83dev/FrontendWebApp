@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button, Table, Container } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import ModalUser from './modalUserForm';
+import config from './config';
 
 function RegisterUser() {
     const [userList, setUserList] = useState([]);
@@ -11,7 +12,7 @@ function RegisterUser() {
 
     // Fetch the user list on component mount
     useEffect(() => {
-        axios.get('https://localhost:7181/api/Account/UserList')
+        axios.get(`${config.NGROK_URL}/api/Account/UserList`)
             .then(response => {
                 setUserList(response.data);
                 console.log("Dati ricevuti:", response.data);
@@ -40,7 +41,7 @@ function RegisterUser() {
         try {
 
             if (confirmDelete) {
-                await axios.delete(`https://9eca-31-171-141-197.ngrok-free.app/api/Account/${id}`);
+                await axios.delete(`${config.NGROK_URL}/api/Account/${id}`);
                 setUserList(userList.filter(user => user.id !== id));
             }
             
