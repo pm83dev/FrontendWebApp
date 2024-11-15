@@ -12,7 +12,7 @@ function Sidebar() {
     // Recupera l'utente loggato
     const user = JSON.parse(localStorage.getItem('user'));
     // Recupera il nome dell'utente
-    const userName = user.name;
+    const userName = user ? user.name : 'Guest';
     console.log(userName);
     
     
