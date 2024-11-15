@@ -4,7 +4,7 @@ import ModalDpp from './modalDppForm';
 import { useNavigate } from 'react-router-dom';
 import { Button, Table, Container, Form, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus, FaChartBar } from 'react-icons/fa';
-import config from './config';
+import config from '../config';
 
 function Dpplist() {
     const [dppMachine, setDppMachine] = useState([]);

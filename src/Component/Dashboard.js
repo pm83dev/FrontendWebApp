@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, CardHeader, CardBody, CardTitle, CardText } from 'react-bootstrap';
 import { Line } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend } from 'chart.js';
-import config from './config';
+import config from '../config';
 
 // Registriamo i componenti necessari di Chart.js
 Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend);

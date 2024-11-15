@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Table, Container } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import ModalUser from './modalUserForm';
-import config from './config';
+import config from '../config';
 
 function RegisterUser() {
     const [userList, setUserList] = useState([]);

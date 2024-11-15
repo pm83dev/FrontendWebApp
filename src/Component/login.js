@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../images/LogoPlasmacIcon50x.png';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import { FaRecycle, FaHeart} from 'react-icons/fa';
-import config from './config';  
+import config from '../config';  
 
 const LoginPage = () => {
   const [Email, setEmail] = useState('');
