@@ -8,29 +8,28 @@ import DashboardPage from './Component/Dashboard';
 import HomePage from './Component/homepage';
 import RegisterUser from './Component/registerUser';
 
+// PrivateRoute che controlla la presenza del token
+const PrivateRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    return token ? children : <Navigate to="/login" />;
+};
+
+// MainLayout con Navbar condizionata e layout
+const MainLayout = ({ children }) => {
+    const location = useLocation();
+    const showNavbar = location.pathname !== '/login';
+
+    return (
+        <>
+            {showNavbar && <Navbar />}
+            <div className="main-content">
+                {children}
+            </div>
+        </>
+    );
+};
+
 function App() {
-        
-    const PrivateRoute = ({ children }) => {
-        const token = localStorage.getItem('token');
-        return token ? children : <Navigate to="/login" />;
-    };
-
-    const MainLayout = ({ children }) => {
-        const location = useLocation();
-        // Mostra la Navbar su tutte le pagine eccetto quella di login
-        const showNavbar = location.pathname !== '/login';
-
-        return (
-            <>
-                {showNavbar && <Navbar/>}
-                <div className="main-content">
-                    {children}
-                </div>
-            </>
-        );
-    };
-
-
     return (
         <Router>
             <MainLayout>
@@ -41,53 +40,17 @@ function App() {
                     {/* Rotta per la pagina di login */}
                     <Route path="/login" element={<LoginPage />} />
 
-                    
-                    {/* Rotta per la lista DPP, protetta da PrivateRoute */}
-                    <Route
-                        path="/homepage"
-                        element={
-                            <PrivateRoute>
-                                <HomePage/>
-                            </PrivateRoute>
-                        }
-                    />
+                    {/* Rotte protette */}
+                    <Route path="/homepage" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+                    <Route path="/users" element={<PrivateRoute><RegisterUser /></PrivateRoute>} />
+                    <Route path="/dpp-list" element={<PrivateRoute><Dpplist /></PrivateRoute>} />
+                    <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
 
-                    {/* Rotta per il dashboard, protetta da PrivateRoute */}
-                    <Route
-                        path="/users"
-                        element={
-                            <PrivateRoute>
-                                <RegisterUser />
-                            </PrivateRoute>
-                        }
-                    />
-
-                    {/* Rotta per la lista DPP, protetta da PrivateRoute */}
-                    <Route
-                        path="/dpp-list"
-                        element={
-                            <PrivateRoute>
-                                <Dpplist />
-                            </PrivateRoute>
-                        }
-                    />
-
-                    {/* Rotta per il dashboard, protetta da PrivateRoute */}
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <PrivateRoute>
-                                <DashboardPage />
-                            </PrivateRoute>
-                        }
-                    />
-                   
-                    {/* Puoi aggiungere altre rotte qui */}
+                    {/* Aggiungi altre rotte qui */}
                 </Routes>
             </MainLayout>
         </Router>
     );
 }
-
 
 export default App;
