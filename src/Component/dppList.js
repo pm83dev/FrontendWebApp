@@ -17,7 +17,7 @@ function Dpplist() {
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
-            const response = await axios.get('https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine');
+            const response = await axios.get('https://9eca-31-171-141-197.ngrok-free.app/api/DppMachine/MachineList');
             setDppMachine(response.data);
         } catch (error) {
             console.error(error);
