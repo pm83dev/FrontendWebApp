@@ -1,7 +1,7 @@
 /* Impostazioni generali */
 html {
     font-size: 16px;
-    position: relative;
+    position: page;
     min-height: 100%;
 }
 
@@ -11,14 +11,12 @@ html {
     }
 }
 
-
-
 body {
-    background-color: #6B7F93;
+    background-color: #3f4e63;
     color: azure;
     min-height: 100vh;
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: "Fira Code Medium", sans-serif;
 }
 
 h1{
@@ -128,46 +126,7 @@ h1{
         font-weight: bold;
     }
 
-/* DashboardPage.css */
 
-/* Stile generale del container della dashboard */
-.dashboard-container {
-    background-color: inherit;
-    padding: 20px;
-    min-height: 100vh; /* Altezza minima per coprire l'intera vista */
-}
-
-/* Stili per le card dei dati */
-.data-card {
-    background-color: #333;
-    color: #fff;
-    margin-bottom: 10px;
-}
-
-.data-card-header {
-    background-color: #007bff;
-    color: #ffffff;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Stili per la card del grafico */
-.chart-card {
-    background-color: #555;
-    border-radius: 10px;    
-}
-
-.chart-card-header {
-    background-color: #28a745;
-    color: #ffffff;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Aggiunge margine tra le colonne nelle card group */
-.mb-4 {
-    margin-bottom: 20px;
-}
 
 /* Pulsanti tabella DPP */
 .btn-TableDpp {
