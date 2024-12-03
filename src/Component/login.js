@@ -16,18 +16,26 @@ const LoginPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post(`${config.NGROK_URL}/api/Account/login`, { Email, Password });
+      // Aggiungi withCredentials per inviare le credenziali
+      const response = await axios.post(`${config.NGROK_URL}/api/Account/login`,
+          { Email, Password },
+          { withCredentials: true } // Aggiungi questa riga
+      );
       const token = response.data.token;
       const userName = response.data.username;
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify({ name: Email }));
+
+      // Imposta l'header Authorization globalmente
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
       setSuccess(`Welcome, ${userName}! You are logged in!`);
       navigate('/homepage');
     } catch (error) {
       setError('Login failed: ' + error.message);
-      } 
+    }
   };
+
 
   return (
     <Container fluid>
