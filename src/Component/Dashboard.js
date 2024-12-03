@@ -4,187 +4,515 @@ import { useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, CardHeader, CardBody, CardTitle, CardText } from 'react-bootstrap';
 import { Line } from 'react-chartjs-2';
 import { Chart, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import config from '../config';
 
-// Registriamo i componenti necessari di Chart.js
-Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend);
+// Registrazione dei componenti Chart.js
+Chart.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend, zoomPlugin);
 
 const DashboardPage = () => {
     const location = useLocation();
     const { machineData } = location.state || {};
     const [newMachineData, setNewMachineData] = useState(machineData || {});
-    const [motorData, setMotorData] = useState({}); // Stato per i dati dei motori (speeds PV - SP)
-    const [tempData, setTempData] = useState({}); // Stato per i dati delle zone (temperatures PV - SP)
+    const [motorData, setMotorData] = useState([]);
+    const [tempData, setTempData] = useState([]);
+    const [pressureData, setPressureData] = useState([]);
+    const [powerData, setPowerData] = useState([]);
+    const [statusData, setStatusData] = useState([]);   
+    const [timeRange, setTimeRange] = useState('10min');
 
     // Funzione per aggiornare i dati delle temperature
-    const fetchTemperatureData = () => {
+    const fetchTemperatureData = async () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`${config.NGROK_URL}/api/DeviceData/temperature/${newMachineData.jobNr}`)
-                .then(response => {
-                    setTempData(response.data); // Aggiorna i dati delle temperature
-                    console.log("Dati temperature ricevuti dall'API:", response.data);
-                })
-                .catch(error => {
-                    console.error("Errore nel recupero dei dati temperature:", error);
-                });
+            try {
+                const response = await axios.get(`${config.NGROK_URL}/api/DeviceData/temperature/${newMachineData.jobNr}`);
+                setTempData(response.data);
+                //console.log(response);
+            } catch (error) {
+                console.error('Errore nel recupero dei dati temperature:', error);
+            }
         }
     };
 
     // Funzione per aggiornare i dati dei motori
-    const fetchMotorData = () => {
+    const fetchMotorData = async () => {
         if (newMachineData?.serialNumber) {
-            axios.get(`${config.NGROK_URL}/api/DeviceData/motor/${newMachineData.jobNr}`)
-                .then(response => {
-                    setMotorData(response.data); // Aggiorna i dati dei motori
-                    console.log("Dati motori ricevuti dall'API:", response.data);
-                })
-                .catch(error => {
-                    console.error("Errore nel recupero dei dati motori:", error);
-                });
+            try {
+                const response = await axios.get(`${config.NGROK_URL}/api/DeviceData/motor/${newMachineData.jobNr}`);
+                setMotorData(response.data);
+                //console.log(response);
+            } catch (error) {
+                console.error('Errore nel recupero dei dati motori:', error);
+            }
         }
     };
+    
+    // Funzione per aggiornare le pressioni
+    const fetchPressureData = async () => {
+        if (newMachineData?.serialNumber) {
+            try {
+                const response = await axios.get(`${config.NGROK_URL}/api/DeviceData/pressure/${newMachineData.jobNr}`)
+                setPressureData(response.data);  
+                //console.log(response);
+            } catch (error) {
+                console.error("Errore nel recupero dei dati pressure:", error);
+            }
+        }
+    }
 
-    // Recupera i dati iniziali quando il componente viene montato
+    // Funzione per aggiornare i consumi
+    const fetchPowerData = async () => {
+        if (newMachineData?.serialNumber) {
+            try {
+                const response = await axios.get(`${config.NGROK_URL}/api/DeviceData/power/${newMachineData.jobNr}`)
+                setPowerData(response.data);
+                //console.log(response);
+            } catch (error) {
+                console.error("Errore nel recupero dei dati power:", error);
+            }
+
+        }
+    }
+    
+    // Funzione per aggiornare lo stato macchina
+    const fetchStatusData = async () => {
+        if (newMachineData?.serialNumber) {
+            try {
+                const response = await axios.get(`${config.NGROK_URL}/api/DeviceData/status/${newMachineData.jobNr}`)
+                setStatusData(response.data);
+                console.log(response);
+            } catch (error) {
+                console.error("Errore nel recupero dei dati power:", error);
+            }
+        }
+    }
+
+    // Recupero dati all'inizio e aggiornamento periodico
     useEffect(() => {
         fetchTemperatureData();
         fetchMotorData();
+        fetchPressureData();
+        fetchPowerData();
+        fetchStatusData();
 
-        // Imposta un intervallo di 10 secondi per aggiornare i dati
         const intervalId = setInterval(() => {
-            fetchTemperatureData(); // Ricarica i dati delle temperature
-            fetchMotorData(); // Ricarica i dati dei motori
-        }, 10000); // 10000 ms = 10 secondi
+            fetchTemperatureData();
+            fetchMotorData();
+            fetchPressureData();
+            fetchPowerData();
+            fetchStatusData();
+        }, 10000); // Aggiorna ogni 10 secondi
 
-        // Pulizia dell'intervallo quando il componente viene smontato
         return () => clearInterval(intervalId);
-    }, [newMachineData]); // L'effetto viene eseguito ogni volta che cambia newMachineData
+    }, [newMachineData]);
 
-    // Estrai l'ultima temperatura Z1
-    const lastTempData = tempData[tempData.length - 2];  // Ultimo elemento
-
-    // Estrai la temperatura Z1
-    const lastTempZ1 = lastTempData?.Temperatures?.PV?.Z1 !== undefined ? lastTempData.Temperatures.PV.Z1 : 'N/A';
-    const lastTempZ2 = lastTempData?.Temperatures?.PV?.Z2 !== undefined ? lastTempData.Temperatures.PV.Z2 : 'N/A';
-    const lastTempZ3 = lastTempData?.Temperatures?.PV?.Z3 !== undefined ? lastTempData.Temperatures.PV.Z3 : 'N/A';
-    const lastTempZ4 = lastTempData?.Temperatures?.PV?.Z4 !== undefined ? lastTempData.Temperatures.PV.Z4 : 'N/A';
-    const lastTempZ5 = lastTempData?.Temperatures?.PV?.Z5 !== undefined ? lastTempData.Temperatures.PV.Z5 : 'N/A';
-    const lastTempZ6 = lastTempData?.Temperatures?.PV?.Z6 !== undefined ? lastTempData.Temperatures.PV.Z6 : 'N/A';
-    const lastTempZ7 = lastTempData?.Temperatures?.PV?.Z7 !== undefined ? lastTempData.Temperatures.PV.Z7 : 'N/A';
-    const lastTempZ8 = lastTempData?.Temperatures?.PV?.Z8 !== undefined ? lastTempData.Temperatures.PV.Z8 : 'N/A';
-    const lastTempZ9 = lastTempData?.Temperatures?.PV?.Z9 !== undefined ? lastTempData.Temperatures.PV.Z9 : 'N/A';
-
-    // Estrai l'ultimo valore dei motori
-    const lastMotorData = motorData[motorData.length - 1];
-    const lastSpeedPV = lastMotorData?.Speeds?.PV?.Ext || 'N/A';
-
-    // Combina i dati delle temperature e dei motori per le card e il grafico
-    const extruderData = tempData && motorData ? {
-        temperatureZ1: tempData.PV?.Z1,
-        temperatureZ2: tempData.PV?.Z2,
-        temperatureZ3: tempData.PV?.Z3,
-        temperatureZ4: tempData.PV?.Z4,
-        temperatureZ5: tempData.PV?.Z5,
-        temperatureZ6: tempData.PV?.Z6,
-        pressureScreen: motorData.SP?.Z1, // esempio di pressione
-        extSpeed: motorData.SP?.Z2, // esempio di velocità
-        extCurrent: motorData.SP?.Z3, // esempio di corrente
-        production: newMachineData.productionRate, // dai dati della macchina
-        totalPower: newMachineData.totalPower,
-    } : {};
-
-    if (!Array.isArray(motorData)) {
-        return <div>I dati non sono disponibili o non sono nel formato previsto</div>;
-    }
-
-    
-    // Funzione per filtrare e sincronizzare i dati
-    const filterMotorData = (timestamps, motorData) => {
-        const filteredData = motorData.filter((value, index) => value !== 0); // Filtra i dati che sono 0
-        const filteredTimestamps = timestamps.filter((_, index) => motorData[index] !== 0); // Sincronizza le etichette
-        return { filteredTimestamps, filteredData };
+    // Funzione per estrarre array di dati da proprietà annidate
+    const createArrayOfData = (data, varName) => {
+        const keys = varName.split('.');
+        return data
+            .map(item => keys.reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), item))
+            .filter(value => value !== undefined && value !== 0);
     };
 
-    // Estrai i dati
-    const timestamps = motorData.map(item => item.Timestamp);
-    const extData = motorData.map(item => item.Speeds?.PV?.Ext || 0);
-    const dicerData = motorData.map(item => item.Speeds?.PV?.Dicer || 0);
-    const rollfeedData = motorData.map(item => item.Speeds?.PV?.Rollfeed || 0);
-    const augerData = motorData.map(item => item.Speeds?.PV?.Auger || 0);
-    const shredderData = motorData.map(item => item.Speeds?.PV?.Shredder || 0);
-
-    // Filtra i dati per ciascun motore utilizzando la funzione generica
-    const { filteredTimestamps: filteredTimestampsExt, filteredData: filteredExtData } = filterMotorData(timestamps, extData);
-    const { filteredTimestamps: filteredTimestampsDicer, filteredData: filteredDicerData } = filterMotorData(timestamps, dicerData);
-    const { filteredTimestamps: filteredTimestampsRollfeed, filteredData: filteredRollfeedData } = filterMotorData(timestamps, rollfeedData);
-    const { filteredTimestamps: filteredTimestampsAuger, filteredData: filteredAugerData } = filterMotorData(timestamps, augerData);
-    const { filteredTimestamps: filteredTimestampsShredder, filteredData: filteredShredderData } = filterMotorData(timestamps, shredderData);
+    // Media mobile
+    const movingAverage = (data, windowSize) => {
+        return data.map((val, index, arr) => {
+            const start = Math.max(0, index - windowSize + 1);
+            const window = arr.slice(start, index + 1);
+            return window.reduce((acc, curr) => acc + curr, 0) / window.length;
+        });
+    };
     
+    // Dati estratti per i grafici
+    
+    const ExtruderPVDataSpeed = movingAverage(createArrayOfData(motorData, 'speedPv.Speed_PV_Extruder'), 5);
+    const ExtruderSPDataSpeed = movingAverage(createArrayOfData(motorData, 'speedSp.Speed_SP_Extruder'), 5);
+    const ExtruderPVDataCurrent = movingAverage(createArrayOfData(motorData, 'currentPv.Current_PV_Extruder'), 5);
+    const ExtruderPVDataTorque = movingAverage(createArrayOfData(motorData, 'torquePv.Torque_PV_Extruder'), 5);
+    
+    const DicerPVDataSpeed = movingAverage(createArrayOfData(motorData, 'speedPv.Speed_PV_Dicer'), 5);
+    const DicerSPDataSpeed = movingAverage(createArrayOfData(motorData, 'speedSp.Speed_SP_Dicer'), 5);
+    const DicerPVDataCurrent = movingAverage(createArrayOfData(motorData, 'currentPv.Current_PV_Dicer'), 5);
+    const DicerPVDataTorque = movingAverage(createArrayOfData(motorData, 'torquePv.Torque_PV_Dicer'), 5);
+    
+    const AugerPVDataSpeed = movingAverage(createArrayOfData(motorData, 'speedPv.Speed_PV_Auger'), 5);
+    const AugerSPDataSpeed = movingAverage(createArrayOfData(motorData, 'speedSp.Speed_SP_Auger'), 5);
+    const AugerPVDataCurrent = movingAverage(createArrayOfData(motorData, 'currentPv.Current_PV_Auger'), 5);
+    const AugerPVDataTorque = movingAverage(createArrayOfData(motorData, 'torquePv.Torque_PV_Auger'), 5);
+    
+    const PressurePVDataInlet = movingAverage(createArrayOfData(pressureData, 'pressInlet.Press_PV_Inlet'), 5);
+    const PressurePVDataOutlet = movingAverage(createArrayOfData(pressureData, 'pressInlet.Press_PV_Outlet'), 5);
+    const PressurePVDataRampack = movingAverage(createArrayOfData(pressureData, 'pressInlet.Press_PV_Rampack'), 5);
+    
+    const ExtruderPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_Extruder'), 5);
+    const DicerPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_Dicer'), 5);
+    const AugerPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_Auger'), 5);
+    const heatingPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_Heating'), 5);
+    const LineActualPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_Line_Actual'), 5);
+    const LineKwhPVDataPower = movingAverage(createArrayOfData(powerData, 'powerPv.Power_PV_line_per_hour'), 5);
+    
+    const TimestampArray = createArrayOfData(motorData, 'timestamp');
+    
+    const TempZone1PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_1');
+    const TempZone2PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_2');
+    const TempZone3PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_3');
+    const TempZone4PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_4');
+    const TempZone5PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_5');
+    const TempZone6PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_6');
+    const TempZone7PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_7');
+    const TempZone8PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_8');
+    const TempZone9PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_9');
+    const TempZone10PV = createArrayOfData(tempData, 'tempPv.Temp_PV_zone_10');
+    
+    const statusDataExtraction = createArrayOfData(statusData, 'codeValue.StandStill');
+    
+    //Find last value
+    const findLastValue = (array) =>
+        {
+            return array.length > 0 ? array[array.length - 1] : undefined;
+        }
+    
+    const LastvalueTempZone1PV = findLastValue(TempZone1PV);
+    const LastvalueTempZone2PV = findLastValue(TempZone2PV);
+    const LastvalueTempZone3PV = findLastValue(TempZone3PV);
+    const LastvalueTempZone4PV = findLastValue(TempZone4PV);
+    const LastvalueTempZone5PV = findLastValue(TempZone5PV);
+    const LastvalueTempZone6PV = findLastValue(TempZone6PV);
+    const LastvalueTempZone7PV = findLastValue(TempZone7PV);
+    const LastvalueTempZone8PV = findLastValue(TempZone8PV);
+    const LastvalueTempZone9PV = findLastValue(TempZone9PV);
+    const LastvalueTempZone10PV = findLastValue(TempZone10PV);
+    
+    const LastValueExtSPSpeed = findLastValue(ExtruderSPDataSpeed);
+    const LastValueExtPVSpeed = findLastValue(ExtruderPVDataSpeed);
+    const LastValueExtPVCurrent = findLastValue(ExtruderPVDataCurrent);
+    const LastValueExtPVTorque = findLastValue(ExtruderPVDataTorque);
+    
+    const LastValueExtPVPower = findLastValue(ExtruderPVDataPower);
+    const LastValueHeatingPVPower = findLastValue(heatingPVDataPower);
+    const LastValueLineActualPVPower = findLastValue(LineActualPVDataPower);
+    const LastValueLineKwhPVPower = findLastValue(LineKwhPVDataPower);
+    
+    const LastValuePressPVInlet = findLastValue(PressurePVDataInlet);
+    const LastValuePressPVOutlet = findLastValue(PressurePVDataOutlet);
+
+    const LastStatusMachine = findLastValue(statusDataExtraction);
+    
+    // Funzione per assegnare stati a stringa
+    const parsedStatus = Number(LastStatusMachine);
+    let statusMachine;
+        switch (parsedStatus) {
+        case 0:
+            statusMachine = "Stopped";
+            break;
+        case 1:
+            statusMachine = "Heating";
+            break;
+        case 2:
+            statusMachine = "Stopped - temperature Ok";
+            break;
+        case 3:
+            statusMachine = "Stopped - Electrical fault";
+            break;
+        case 4:
+            statusMachine = "Stopped - Mechanical fault";
+            break;
+        case 5:
+            statusMachine = "Stopped - Mechanical maintenance";
+            break;
+        case 6:
+            statusMachine = "Stopped - Electrical maintenance";
+            break;
+        case 7:
+            statusMachine = "Stopped - shift change";
+            break;
+        case 8:
+            statusMachine = "Purging";
+            break;
+        case 100:
+            statusMachine = "Running";
+            break;    
+        default:
+            statusMachine = "Offline/Unknown";
+            break;
+    }
+    
+    
+    // Funzione per calcolare l'ora di partenza basata su un intervallo
+    const calculateStartTime = (range) => {
+        const now = Date.now(); // Timestamp attuale in millisecondi
+        const ranges = {
+            '10min': 10 * 60 * 1000,
+            '30min': 30 * 60 * 1000,
+            '1h': 60 * 60 * 1000,
+            '6h': 6 * 60 * 60 * 1000,
+            '12h': 12 * 60 * 60 * 1000,
+            '24h': 24 * 60 * 60 * 1000,
+            '7d': 7 * 24 * 60 * 60 * 1000,
+        };
+
+        return ranges[range] ? now - ranges[range] : 0;
+    };
+
+    // Funzione per filtrare i dati in base all'intervallo di tempo
+    const filterDataByTimeRange = (timestamps, values, range) => {
+        const startTime = calculateStartTime(range);
+        return timestamps.map((timestamp, index) => ({
+            timestamp: new Date(timestamp),
+            value: values[index],
+        })).filter(item => item.timestamp.getTime() >= startTime);
+    };
+
+    // Filtraggio dei dati
+    const filteredValuesExtPVSpeed = filterDataByTimeRange(TimestampArray, ExtruderPVDataSpeed, timeRange);
+    const filteredValuesExtSPSpeed = filterDataByTimeRange(TimestampArray, ExtruderSPDataSpeed, timeRange);
+    const filteredValuesExtPVCurrent = filterDataByTimeRange(TimestampArray, ExtruderPVDataCurrent, timeRange);
+    const filteredValuesExtPVPower = filterDataByTimeRange(TimestampArray, ExtruderPVDataPower, timeRange);
+    const filteredValuesExtPVTorque = filterDataByTimeRange(TimestampArray, ExtruderPVDataTorque, timeRange);
+
+    const filteredValuesDicerPVSpeed = filterDataByTimeRange(TimestampArray, DicerPVDataSpeed, timeRange);
+    const filteredValuesDicerSPSpeed = filterDataByTimeRange(TimestampArray, DicerSPDataSpeed, timeRange);
+    const filteredValuesDicerPVCurrent = filterDataByTimeRange(TimestampArray, DicerPVDataCurrent, timeRange);
+    const filteredValuesDicerPVPower = filterDataByTimeRange(TimestampArray, DicerPVDataPower, timeRange);
+    const filteredValuesDicerPVTorque = filterDataByTimeRange(TimestampArray, DicerPVDataTorque, timeRange);
+
+    const filteredValuesAugerPVSpeed = filterDataByTimeRange(TimestampArray, AugerPVDataSpeed, timeRange);
+    const filteredValuesAugerSPSpeed = filterDataByTimeRange(TimestampArray, AugerSPDataSpeed, timeRange);
+    const filteredValuesAugerPVCurrent = filterDataByTimeRange(TimestampArray, AugerPVDataCurrent, timeRange);
+    const filteredValuesAugerPVPower = filterDataByTimeRange(TimestampArray, AugerPVDataPower, timeRange);
+    const filteredValuesAugerPVTorque = filterDataByTimeRange(TimestampArray, AugerPVDataTorque, timeRange);
+    
+    // Estrazione dei timestamp e dei valori
+    const filteredTimeStamp = filteredValuesExtPVSpeed.map(item => item.timestamp.toLocaleString()); // Formatta il timestamp come desideri
+    
+    const filteredDataExtPVSpeed = filteredValuesExtPVSpeed.map(item => item.value); 
+    const filteredDataExtSPSpeed = filteredValuesExtSPSpeed.map(item => item.value);
+    const filteredDataExtPVCurrent = filteredValuesExtPVCurrent.map(item => item.value);
+    const filteredDataExtPVPower = filteredValuesExtPVPower.map(item => item.value);
+    const filteredDataExtPVTorque = filteredValuesExtPVTorque.map(item => item.value);
+
+    const filteredDataDicerPVSpeed = filteredValuesDicerPVSpeed.map(item => item.value);
+    const filteredDataDicerSPSpeed = filteredValuesDicerSPSpeed.map(item => item.value);
+    const filteredDataDicerPVCurrent = filteredValuesDicerPVCurrent.map(item => item.value);
+    const filteredDataDicerPVPower = filteredValuesDicerPVPower.map(item => item.value);
+    const filteredDataDicerPVTorque = filteredValuesDicerPVTorque.map(item => item.value);
+
+    const filteredDataAugerPVSpeed = filteredValuesAugerPVSpeed.map(item => item.value);
+    const filteredDataAugerSPSpeed = filteredValuesAugerSPSpeed.map(item => item.value);
+    const filteredDataAugerPVCurrent = filteredValuesAugerPVCurrent.map(item => item.value);
+    const filteredDataAugerPVPower = filteredValuesAugerPVPower.map(item => item.value);
+    const filteredDataAugerPVTorque = filteredValuesAugerPVTorque.map(item => item.value);
+
     const chartDataExt = {
-        labels: filteredTimestampsExt,
+        labels: filteredTimeStamp,
         datasets: [
             {
-                label: 'Ext',
-                data: filteredExtData,  // Filtra i valori 0
+                label: 'ExtPVSpeed',
+                data: filteredDataExtPVSpeed,
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 1,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'ExtSPSpeed',
+                data: filteredDataExtSPSpeed,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(225, 167, 21, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'ExtPVCurrent',
+                data: filteredDataExtPVCurrent,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(242, 61, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+            
+            {
+                label: 'ExtPVPower',
+                data: filteredDataExtPVPower,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(37, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'ExtPVTorque',
+                data: filteredDataExtPVTorque,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(239, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
             },
         ]
     };
 
     const chartDataDicer = {
-        labels: filteredTimestampsDicer,
-        datasets: [ 
+        labels: filteredTimeStamp,
+        datasets: [
             {
-                label: 'Dicer',
-                data: filteredDicerData,  // Filtra i valori 0
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                label: 'DicerPVSpeed',
+                data: filteredDataDicerPVSpeed,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 2,
                 fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
             },
-        ]}
-    
-    const chartDataRollfeed = {
-        labels: filteredTimestampsRollfeed,
-        datasets: [ 
+
             {
-                label: 'Rollfeed',
-                data: filteredRollfeedData,  // Filtra i valori 0
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                borderColor: 'rgba(255, 159, 64, 1)',
+                label: 'DicerSPSpeed',
+                data: filteredDataDicerSPSpeed,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(225, 167, 21, 0.8)',
                 borderWidth: 2,
                 fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
             },
-        ]}
+
+            {
+                label: 'DicerPVCurrent',
+                data: filteredDataDicerPVCurrent,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(242, 61, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'DicerPVPower',
+                data: filteredDataDicerPVPower,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(37, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'DicerPVTorque',
+                data: filteredDataDicerPVTorque,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(239, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+        ]
+    };
 
     const chartDataAuger = {
-        labels: filteredTimestampsAuger,
-        datasets: [ 
+        labels: filteredTimeStamp,
+        datasets: [
             {
-                label: 'Auger',
-                data: filteredAugerData,  // Filtra i valori 0
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                borderColor: 'rgba(255, 159, 64, 1)',
+                label: 'AugerPVSpeed',
+                data: filteredDataAugerPVSpeed,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
                 borderWidth: 2,
                 fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
             },
-        ]}
-    
-    const chartDataShredder = {
-        labels: filteredTimestampsShredder,
-        datasets: [ 
+
             {
-                label: 'Shredder',
-                data: filteredShredderData,  // Filtra i valori 0
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                borderColor: 'rgba(255, 159, 64, 1)',
+                label: 'AugerSPSpeed',
+                data: filteredDataAugerSPSpeed,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(225, 167, 21, 0.8)',
                 borderWidth: 2,
                 fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
             },
-        ]}
+
+            {
+                label: 'AugerPVCurrent',
+                data: filteredDataAugerPVCurrent,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(242, 61, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'AugerPVPower',
+                data: filteredDataAugerPVPower,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(37, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+
+            {
+                label: 'AugerPVTorque',
+                data: filteredDataAugerPVTorque,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(239, 242, 10, 0.8)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.8, // Linea fluida
+                pointRadius: 2, // Dimensione punti
+                pointHoverRadius: 4, // Dimensione punti al passaggio del mouse
+
+            },
+        ]
+    };
+
 
     const chartOptions = {
         responsive: true,
@@ -192,133 +520,264 @@ const DashboardPage = () => {
         scales: {
             x: {
                 ticks: { color: 'white' },
-                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                grid: { color: 'rgba(232,228,228,0.1)' },
             },
             y: {
                 ticks: { color: 'white' },
-                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                grid: { color: 'rgba(232,228,228,0.1)' },
             },
         },
+        plugins: {
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'x',
+                },
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    pinch: {
+                        enabled: true,
+                    },
+                    mode: 'x',
+                },
+            },
+        },
+        
     };
 
     return (
         <div className="main-content">
-            <Container fluid className="dashboard-container">
-                <Row>
-                    <Col md={6}>
-                        <Card className="bg-dark text-info mb-3">
-                            <CardHeader className='bg-primary text-white'>Product Digital Passport</CardHeader>
+            <Container fluid={"xl"} className="dashboard-container">
+                <Row className="gy-4">
+                    <Col md={8}>
+                        <Card className="bg-dark text-light mb-3 border-0 shadow-lg rounded">
+                            <CardHeader className="bg-gradient text-white rounded-top">
+                                <h5 className="mb-0">
+                                    <i className="bi bi-passport-fill me-2"></i>Product Digital Passport
+                                </h5>
+                            </CardHeader>
                             <CardBody>
                                 <Row>
                                     <Col md={6}>
-                                        <Card.Title>Job Number: {newMachineData.jobNr || 'N/A'}</Card.Title>
-                                        <Card.Text>Serial Number: {newMachineData.serialNumber || 'N/A'}</Card.Text>
-                                        <Card.Text>Model: {newMachineData.model || 'N/A'}</Card.Text>
-                                        <Card.Text>Description: {newMachineData.description || 'N/A'}</Card.Text>
-                                        <Card.Text>Customer: {newMachineData.customer || 'N/A'}</Card.Text>
-                                        <Card.Text>Final User: {newMachineData.finalUser || 'N/A'}</Card.Text>
-                                        <Card.Text>Country: {newMachineData.country || 'N/A'}</Card.Text>
+                                        <Card.Title className="fw-bold">
+                                            <i className="bi bi-gear-fill me-2"></i>Job Number: {newMachineData.jobNr || 'N/A'}
+                                        </Card.Title>
+                                        <Card.Text>
+                                            <i className="bi bi-upc-scan me-2"></i>Serial Number: {newMachineData.serialNumber || 'N/A'}
+                                        </Card.Text>
+                                        <Card.Text>
+                                            <i className="bi bi-cpu-fill me-2"></i>Model: {newMachineData.model || 'N/A'}
+                                        </Card.Text>
+                                        <Card.Text>
+                                            <i className="bi bi-card-text me-2"></i>Description: {newMachineData.description || 'N/A'}
+                                        </Card.Text>
                                     </Col>
                                     <Col md={6}>
-                                        <Card.Text>Material Type: {newMachineData.materialType || 'N/A'}</Card.Text>
-                                        <Card.Text>Production Rate: {newMachineData.productionRate || 'N/A'} Kg/h</Card.Text>
-                                        <Card.Text>Total Power: {newMachineData.totalPower || 'N/A'} kW/h</Card.Text>
+                                        <Card.Text>
+                                            <i className="bi bi-speedometer2 me-2"></i>Production Rate: {newMachineData.productionRate || 'N/A'} Kg/h
+                                        </Card.Text>
+                                        <Card.Text>
+                                            <i className="bi bi-battery-charging me-2"></i>Total Power: {newMachineData.totalPower || 'N/A'} kW/h
+                                        </Card.Text>
+                                        <Card.Text>
+                                            <i className="bi bi-archive-fill me-2"></i>Material Type: {newMachineData.materialType || 'N/A'}
+                                        </Card.Text>
                                     </Col>
                                 </Row>
                             </CardBody>
                         </Card>
                     </Col>
-                    <Col md={6}>
-                    <Card className="bg-dark text-info mb-3">
-                            <CardHeader className='bg-primary text-white'>Machine Last Data {newMachineData.jobNr}</CardHeader>
+                    <Col md={4}>
+                        <Card className="bg-dark text-light mb-3 border-0 shadow-lg rounded">
+                            <CardHeader className="bg-gradient text-white rounded-top">
+                                <h5 className="mb-0">
+                                    <i className="bi bi-person-fill me-2"></i>Customer Info
+                                </h5>
+                            </CardHeader>
                             <CardBody>
-                                <CardTitle>Machine Status: Running</CardTitle>
-                                <Row>
-                                    <Col md={6}>
-                                        <CardText>Temperature Z1: {lastTempZ1 || 'N/A'} °C</CardText>
-                                        <CardText>Temperature Z2: {lastTempZ2 || 'N/A'} °C</CardText>
-                                        <CardText>Temperature Z3: {lastTempZ3 || 'N/A'} °C</CardText>
-                                        <CardText>Temperature Z4: {lastTempZ4 || 'N/A'} °C</CardText>
-                                        <CardText>Temperature Z5: {lastTempZ5 || 'N/A'} °C</CardText>
-                                        <CardText>Temperature Z6: {lastTempZ6 || 'N/A'} °C</CardText>
-                                    </Col>
-                                    <Col md={6}>
-                                        <CardText>Pressure Screen: {extruderData.pressureScreen || 'N/A'} bar</CardText>
-                                        <CardText>Extruder Speed: {lastSpeedPV || 'N/A'} rpm</CardText>
-                                        <CardText>Extruder Current: {extruderData.extCurrent || 'N/A'} A</CardText>
-                                        <CardText>Actual Production: {extruderData.production || 'N/A'} Kg/h</CardText>
-                                        <CardText>Actual Power: {extruderData.totalPower || 'N/A'} kW</CardText>
-                                    </Col>
-                                </Row>
+                                <Card.Text>
+                                    <i className="bi bi-people-fill me-2"></i>Customer: {newMachineData.customer || 'N/A'}
+                                </Card.Text>
+                                <Card.Text>
+                                    <i className="bi bi-person-check-fill me-2"></i>Final User: {newMachineData.finalUser || 'N/A'}
+                                </Card.Text>
+                                <Card.Text>
+                                    <i className="bi bi-geo-alt-fill me-2"></i>Country: {newMachineData.country || 'N/A'}
+                                </Card.Text>
                             </CardBody>
                         </Card>
-                    
                     </Col>
+                </Row>
 
-                </Row>
+
+
+
+                <Card className="bg-dark text-light mb-3 border-0 shadow-lg rounded">
+                    <CardHeader className="bg-gradient text-white rounded-top">
+                        <h5 className="mb-0">
+                            <i className="bi bi-speedometer2 me-2"></i>Machine Last Data - {newMachineData.jobNr || 'N/A'}
+                        </h5>
+                    </CardHeader>
+                    <CardBody>
+                        <CardTitle className="fw-bold">
+                            <i className="bi bi-info-circle me-2"></i>Machine Status: {statusMachine || 'N/A'}
+                        </CardTitle>
+                        <Row className="gy-3">
+                            {/* Colonna 1 */}
+                            <Col md={4}>
+                                <ul className="list-unstyled">
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z1: {LastvalueTempZone1PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z2: {LastvalueTempZone2PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z3: {LastvalueTempZone3PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z4: {LastvalueTempZone4PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z5: {LastvalueTempZone5PV || 'N/A'} °C
+                                    </li>
+                                </ul>
+                            </Col>
+                            {/* Colonna 2 */}
+                            <Col md={4}>
+                                <ul className="list-unstyled">
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z6: {LastvalueTempZone6PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z7: {LastvalueTempZone7PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z8: {LastvalueTempZone8PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z9: {LastvalueTempZone9PV || 'N/A'} °C
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-thermometer-half me-2"></i>
+                                        Temperature Z10: {LastvalueTempZone10PV || 'N/A'} °C
+                                    </li>
+                                </ul>
+                            </Col>
+                            {/* Colonna 3 */}
+                            <Col md={4}>
+                                <ul className="list-unstyled">
+                                    <li>
+                                        <i className="bi bi-gauge me-2"></i>
+                                        Pressure Screen: {LastValuePressPVInlet || 'N/A'} bar
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-box-seam me-2"></i>
+                                        Actual Production: {'N/A'} Kg/h
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-lightning me-2"></i>
+                                        Actual Power Heating: {LastValueHeatingPVPower || 'N/A'} kW
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-plug-fill me-2"></i>
+                                        Actual Power: {LastValueLineActualPVPower || 'N/A'} kW
+                                    </li>
+                                    <li>
+                                        <i className="bi bi-clock-history me-2"></i>
+                                        Power per Hour: {LastValueLineKwhPVPower || 'N/A'} kWh
+                                    </li>
+                                </ul>
+                            </Col>
+                        </Row>
+                    </CardBody>
+                </Card>
+
+
+
+
                 <Row>
-                    <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Extruder Motor Chart</CardHeader>
+                    <Col lg={4}>
+                        <Card className="bg-dark text-light mb-3 border-0 shadow-sm rounded">
+                            <CardHeader className="bg-gradient text-light rounded-top">
+                                <h5 className="mb-0">
+                                    <i className="bi bi-calendar-range me-2"></i>Time Range Filter
+                                </h5>
+                            </CardHeader>
                             <CardBody>
-                                <Line data={chartDataExt} chartOptions={chartOptions}/>
+                                <CardText className="mb-0">
+                                    <select
+                                        className="form-select bg-secondary text-light border-0"
+                                        value={timeRange}
+                                        onChange={(e) => setTimeRange(e.target.value)}
+                                    >
+                                        <option value="10min">Last 10 min</option>
+                                        <option value="30min">Last 30 min</option>
+                                        <option value="1h">Last 1 Hour</option>
+                                        <option value="6h">Last 6 Hours</option>
+                                        <option value="12h">Last 12 Hours</option>
+                                        <option value="24h">Last 24 Hours</option>
+                                        <option value="7d">Last 7 Days</option>
+                                    </select>
+                                </CardText>
                             </CardBody>
                         </Card>
                     </Col>
                 </Row>
-                <Row>
+
+
+                <Col md={12}>
+                    <Card className="bg-dark text-light mb-3 border-0 shadow-sm rounded">
+                        <CardHeader className="bg-gradient text-light rounded-top d-flex align-items-center">
+                            <i className="bi bi-bar-chart-fill me-2"></i>
+                            <h5 className="mb-0">Extruder Motor Chart</h5>
+                        </CardHeader>
+                        <CardBody>
+                            <div className="chart-container" style={{ position: 'relative', height: '400px' }}>
+                                <Line data={chartDataExt} options={chartOptions} />
+                            </div>
+                        </CardBody>
+                    </Card>
+                </Col>
                     <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Dicer Motor Chart</CardHeader>
+                        <Card className="bg-dark text-light mb-3 border-0 shadow-sm rounded">
+                            <CardHeader className="bg-gradient text-light rounded-top d-flex align-items-center">
+                                <i className="bi bi-bar-chart-fill me-2"></i>
+                                <h5 className="mb-0">Dicer Motor Chart</h5>
+                            </CardHeader>
                             <CardBody>
-                                <Line data={chartDataDicer}/>
+                                <div className="chart-container" style={{ position: 'relative', height: '400px' }}>
+                                    <Line data={chartDataDicer} options={chartOptions} />
+                                </div>
                             </CardBody>
                         </Card>
                     </Col>
-                </Row>
-                <Row>
                     <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Rollfeed Motor Chart</CardHeader>
+                        <Card className="bg-dark text-light mb-3 border-0 shadow-sm rounded">
+                            <CardHeader className="bg-gradient text-light rounded-top d-flex align-items-center">
+                                <i className="bi bi-bar-chart-fill me-2"></i>
+                                <h5 className="mb-0">Auger Motor Chart</h5>
+                            </CardHeader>
                             <CardBody>
-                                <Line data={chartDataRollfeed}/>
+                                <div className="chart-container" style={{ position: 'relative', height: '400px' }}>
+                                    <Line data={chartDataAuger} options={chartOptions} />
+                                </div>
                             </CardBody>
                         </Card>
                     </Col>
-                </Row>
-                <Row>
-                    <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Auger Motor Chart</CardHeader>
-                            <CardBody>
-                                <Line data={chartDataAuger}/>
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Shredder Motor Chart</CardHeader>
-                            <CardBody>
-                                <Line data={chartDataShredder}/>
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col md={12}>
-                        <Card className='bg-dark mb-3'>
-                            <CardHeader className='text-bg-info'>Production Chart</CardHeader>
-                            <CardBody>
-                                <Line data={chartDataShredder}/>
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
             </Container>
         </div>
     );
 };
-
 export default DashboardPage;
