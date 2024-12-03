@@ -18,12 +18,18 @@ function Dpplist() {
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
-            const response = await axios.get(`${config.NGROK_URL}/api/DppMachine/MachineList`);
+            const token = localStorage.getItem('token');  // Recupera il token dal localStorage
+            const response = await axios.get(`${config.NGROK_URL}/api/DppMachine/MachineList`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`  // Aggiungi il token come header
+                }
+            });
             setDppMachine(response.data);
         } catch (error) {
             console.error(error);
         }
     };
+
 
     useEffect(() => {
         fetchMachines();
