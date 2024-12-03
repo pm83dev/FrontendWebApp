@@ -6,18 +6,7 @@ import { Modal, Button, Form, Table, Container } from 'react-bootstrap';
 function HomePage() {
     const [dataTest, setDataTest] = useState([]);
     const [showModal, setShowModal] = useState(false);
-
-    useEffect(() => {
-        axios.get('https://localhost:7181/WeatherForecast')
-            .then(response => {
-                setDataTest(response.data);
-                console.log("testdatiApi:", response.data);
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }, []);
-
+    
     const handleButtonClick = () => {
         // Add your function logic here
         setShowModal(true);
