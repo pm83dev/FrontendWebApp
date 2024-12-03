@@ -18,10 +18,12 @@ function Dpplist() {
     // Funzione per recuperare le macchine
     const fetchMachines = async () => {
         try {
+            console.log("Fetching machines...");
             const response = await axios.get(`${config.NGROK_URL}/api/DppMachine/MachineList`);
+            console.log(response.data);  // Assicurati che i dati siano correttamente restituiti
             setDppMachine(response.data);
         } catch (error) {
-            console.error(error);
+            console.error("Error fetching machines:", error);
         }
     };
 
